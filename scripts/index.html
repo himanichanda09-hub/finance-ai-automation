@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Finance Sentinel | Interactive Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .slack-border { border-left: 4px solid #e2e8f0; }
+        .urgent { border-left-color: #ef4444; }
+        .warning { border-left-color: #f59e0b; }
+        .terminal { background: #1a1a1a; color: #00ff00; font-family: monospace; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-6xl mx-auto px-4 py-12">
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">AI Finance Sentinel Simulator</h1>
+            <p class="text-xl text-gray-600">Testing the Python logic and AI response generation</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Side: Inputs -->
+            <div class="bg-white p-8 rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold mb-6">1. Input Data (Excel Simulation)</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Task Name</label>
+                        <input type="text" id="taskName" value="VAT Quarterly Filing" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Deadline Date</label>
+                        <input type="date" id="deadlineDate" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Amount ($)</label>
+                        <input type="number" id="amount" value="5000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <button onclick="runSimulation()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                        Execute Automation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Live Output -->
+            <div class="space-y-6">
+                <!-- Python Console -->
+                <div class="terminal p-4 rounded-xl shadow-lg h-48 overflow-auto">
+                    <p class="text-gray-400"># Python Code Output (Zapier Step)</p>
+                    <div id="consoleOutput" class="mt-2">Waiting for execution...</div>
+                </div>
+
+                <!-- Slack Preview -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase mb-4">Slack Notification (Gemini AI Output)</h3>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded text-white flex items-center justify-center font-bold">FS</div>
+                        <div>
+                            <p class="font-bold text-gray-900">FinanceBot <span class="text-gray-400 font-normal text-xs">11:15 AM</span></p>
+                            <div id="slackMsg" class="mt-1 text-gray-700 slack-border pl-4 italic">
+                                Run the simulation to generate a message.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default date to 2 days from now
+        const d = new Date();
+        d.setDate(d.getDate() + 2);
+        document.getElementById('deadlineDate').value = d.toISOString().split('T')[0];
+
+        function runSimulation() {
+            const task = document.getElementById('taskName').value;
+            const dateStr = document.getElementById('deadlineDate').value;
+            const amt = document.getElementById('amount').value;
+            
+            const deadline = new Date(dateStr);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            deadline.setHours(0,0,0,0);
+            
+            const diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+            
+            let type = "Status Update";
+            let color = "gray";
+            let slackClass = "border-gray-200";
+
+            if (diffDays === 0) {
+                type = "Heads Up";
+                color = "red";
+                slackClass = "urgent";
+            } else if (diffDays === 2) {
+                type = "Standard Reminder";
+                color = "orange";
+                slackClass = "warning";
+            }
+
+            // Update Console
+            document.getElementById('consoleOutput').innerHTML = `
+                <span class="text-blue-400">>>> Running calculate_message_type('${dateStr}')</span><br>
+                <span>Diff Days: ${diffDays}</span><br>
+                <span>Result: {"type": "${type}", "urgent": ${amt > 10000}}</span>
+            `;
+
+            // Update Slack (Simulating Gemini AI)
+            const aiDraft = diffDays === 0 
+                ? `🚨 <b>Heads Up!</b> The deadline for <b>${task}</b> ($${amt}) is TODAY. Please finalize the filing immediately to avoid penalties.`
+                : diffDays === 2 
+                ? `👋 <b>Reminder:</b> The deadline for <b>${task}</b> is in 48 hours. Please ensure all documents are ready.`
+                : `✅ Everything looks good! No immediate action needed for ${task}.`;
+
+            const slackBox = document.getElementById('slackMsg');
+            slackBox.innerHTML = aiDraft;
+            slackBox.className = "mt-1 text-gray-700 slack-border pl-4 " + slackClass;
+        }
+    </script>
+</body>
+</html>
