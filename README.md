@@ -1,3 +1,5 @@
+Implemented in a corporate environment using Azure OpenAI and Zapier
+
 # 💰 AI Finance Deadline Sentinel
 > An intelligent automation system using **Zapier**, **Python**, and **Azure OpenAI**.
 
